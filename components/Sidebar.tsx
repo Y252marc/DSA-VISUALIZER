@@ -52,57 +52,54 @@ export default function Sidebar({ className = "" }: { className?: string }) {
     };
 
     const activeCount = REGISTRY.filter((a) => a.status === "active").length;
-    const totalCount = REGISTRY.length;
 
     return (
-        <aside className={`flex flex-col flex-shrink-0 z-50 overflow-hidden ${className}`}>
-            {/* Header */}
-            <div className="px-5 py-4 border-b border-slate-800 flex-shrink-0 bg-slate-950/50 backdrop-blur-sm">
+        <aside className={`flex flex-col flex-shrink-0 z-50 overflow-hidden bg-slate-950 border-r border-slate-800 h-full ${className}`}>
+
+            {/* Header - WRAPPED in px-8 pt-8 pb-4 */}
+            <div className="px-8 pt-8 pb-4 flex-shrink-0">
                 <Link href="/" className="block">
-                    <h1 className="text-xs font-bold tracking-[0.2em] uppercase text-white/90">
-                        DSA Visualizer
+                    <h1 className="text-2xl font-black tracking-tighter text-white">
+                        DSA VISUALIZER
                     </h1>
-                    <p className="text-[10px] text-slate-500 mt-1 tracking-wider">
-                        {activeCount} active · {totalCount} blueprints
+                    <p className="text-[10px] text-slate-500 tracking-wider uppercase font-semibold mt-2">
+                        {activeCount} Active Modules
                     </p>
                 </Link>
             </div>
 
-            {/* Search */}
-            <div className="px-5 py-3 border-b border-slate-800 flex-shrink-0 bg-slate-950">
-                <div className="relative">
+            {/* Search - px-8 */}
+            <div className="px-8 pb-6 flex-shrink-0">
+                <div className="relative group">
                     <Search
                         size={14}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-hover:text-white transition-colors"
                     />
                     <input
                         type="text"
-                        placeholder="Search algorithms..."
+                        placeholder="Search..."
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-sm px-3 pl-9 py-1.5 text-xs text-white/90 placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-colors"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-sm px-3 pl-9 py-3 text-xs text-white/90 placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 transition-all font-mono"
                     />
                 </div>
             </div>
 
-            {/* Algorithm List */}
-            <nav className="flex-1 overflow-y-auto py-2 scrollbar-thin scrollbar-track-slate-950 scrollbar-thumb-slate-800 bg-slate-950">
+            {/* Navigation - px-4 wrapper for the list container */}
+            <nav className="flex-1 overflow-y-auto min-h-0 px-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-800 pb-8">
                 {Object.entries(grouped).map(([category, items]) => {
                     const isOpen = openCategories[category];
 
                     return (
-                        <div key={category} className="mb-1">
-                            {/* Category Header */}
+                        <div key={category} className="mb-4">
+                            {/* Category Header - pl-4 for alignment */}
                             <button
                                 onClick={() => toggleCategory(category)}
-                                className="w-full flex items-center justify-between px-5 py-2 text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400 hover:text-slate-200 transition-colors group"
+                                className="w-full flex items-center justify-between text-xs font-bold uppercase tracking-[0.15em] text-slate-400 hover:text-white transition-colors group mb-2 px-4 py-2"
                             >
                                 <span className="flex items-center gap-2">
-                                    <span className="opacity-70 group-hover:opacity-100 transition-opacity">{CATEGORY_ICONS[category] || "•"}</span>
+                                    <span className="opacity-50 group-hover:opacity-100">{CATEGORY_ICONS[category] || "•"}</span>
                                     <span>{category}</span>
-                                    <span className="text-slate-600 font-medium ml-1">
-                                        {items.length}
-                                    </span>
                                 </span>
                                 {isOpen ? (
                                     <ChevronDown size={14} className="text-slate-600" />
@@ -111,31 +108,25 @@ export default function Sidebar({ className = "" }: { className?: string }) {
                                 )}
                             </button>
 
-                            {/* Algorithm Items - Indentation pl-10 (2.5rem) */}
+                            {/* Items - pl-4 py-2 per item */}
                             {isOpen && (
-                                <div className="pb-2 pt-1 flex flex-col gap-0.5">
+                                <div className="flex flex-col gap-0.5 border-l border-slate-800/50 ml-6">
                                     {items.map((algo) => {
-                                        const isActive =
-                                            pathname === `/visualizer/${algo.id}`;
+                                        const isActive = pathname === `/visualizer/${algo.id}`;
                                         return (
                                             <Link
                                                 key={algo.id}
                                                 href={`/visualizer/${algo.id}`}
-                                                className={`flex items-center gap-2.5 pl-10 pr-4 py-1.5 text-xs border-l-2 transition-all ${isActive
-                                                        ? "border-blue-600 bg-blue-600/10 text-white font-medium"
-                                                        : "border-transparent text-slate-500 hover:text-slate-300 hover:bg-slate-900/30"
+                                                // STRICT: pl-4 py-2 on the item itself
+                                                className={`flex items-center gap-3 pl-4 pr-3 py-2 text-xs transition-colors rounded-r-sm ${isActive
+                                                        ? "text-blue-400 bg-blue-500/10 font-semibold border-l-2 border-blue-500 -ml-px"
+                                                        : "text-slate-500 hover:text-slate-300 hover:bg-slate-900 border-l-2 border-transparent -ml-px"
                                                     }`}
                                             >
                                                 {algo.status === "active" ? (
-                                                    <Activity
-                                                        size={12}
-                                                        className={`${isActive ? "text-blue-500" : "text-slate-600"} flex-shrink-0`}
-                                                    />
+                                                    <Activity size={12} className={isActive ? "text-blue-500" : "text-slate-600"} />
                                                 ) : (
-                                                    <FileText
-                                                        size={12}
-                                                        className="text-slate-700 flex-shrink-0"
-                                                    />
+                                                    <FileText size={12} className="text-slate-700" />
                                                 )}
                                                 <span className="truncate">{algo.title}</span>
                                             </Link>
@@ -148,11 +139,14 @@ export default function Sidebar({ className = "" }: { className?: string }) {
                 })}
             </nav>
 
-            {/* Footer */}
-            <div className="px-5 py-3 border-t border-slate-800 bg-slate-950 flex-shrink-0">
-                <p className="text-[10px] text-slate-600">
-                    v1.0.0 · Industrial
-                </p>
+            {/* Footer - px-8 */}
+            <div className="flex-shrink-0 p-8 pt-4 mt-auto border-t border-slate-800/50">
+                <div className="flex items-center justify-between">
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]"></span>
+                    <span className="text-[10px] uppercase tracking-widest text-slate-600 font-mono">
+                        System Online
+                    </span>
+                </div>
             </div>
         </aside>
     );

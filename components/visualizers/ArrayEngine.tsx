@@ -277,45 +277,45 @@ export default function ArrayEngine({ algo }: { algo: AlgoItem }) {
         <div className="flex flex-col h-[calc(100vh-140px)] gap-1">
             {/* Top Section: Visualization */}
             <div className="flex-1 flex flex-col space-y-1 min-h-0">
-                {/* Controls - Sharp corners */}
-                <div className="flex items-center justify-between border border-slate-800 bg-slate-950 p-2 shrink-0">
-                    <div className="flex items-center gap-2">
+                {/* Controls - Size/Speed Row - UPDATED to py-4 or py-6 as requested */}
+                <div className="flex items-center justify-between border border-slate-800 bg-slate-950 px-6 py-4 shrink-0">
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={togglePlay}
                             disabled={isComplete}
-                            className="flex items-center justify-center w-8 h-8 rounded-sm border border-slate-700 bg-slate-900 text-white hover:border-slate-500 disabled:opacity-30 transition-colors"
+                            className="flex items-center justify-center w-10 h-10 rounded-sm border border-slate-700 bg-slate-900 text-white hover:border-slate-500 disabled:opacity-30 transition-colors"
                         >
-                            {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+                            {isPlaying ? <Pause size={16} /> : <Play size={16} />}
                         </button>
                         <button
                             onClick={() => {
                                 if (!isPlaying) step();
                             }}
                             disabled={isComplete || isPlaying}
-                            className="flex items-center justify-center w-8 h-8 rounded-sm border border-slate-700 bg-slate-900 text-white hover:border-slate-500 disabled:opacity-30 transition-colors"
+                            className="flex items-center justify-center w-10 h-10 rounded-sm border border-slate-700 bg-slate-900 text-white hover:border-slate-500 disabled:opacity-30 transition-colors"
                         >
-                            <SkipForward size={14} />
+                            <SkipForward size={16} />
                         </button>
                         <button
                             onClick={reset}
-                            className="flex items-center justify-center w-8 h-8 rounded-sm border border-slate-700 bg-slate-900 text-white hover:border-slate-500 transition-colors"
+                            className="flex items-center justify-center w-10 h-10 rounded-sm border border-slate-700 bg-slate-900 text-white hover:border-slate-500 transition-colors"
                         >
-                            <RotateCcw size={14} />
+                            <RotateCcw size={16} />
                         </button>
                         <button
                             onClick={randomize}
-                            className="flex items-center justify-center w-8 h-8 rounded-sm border border-slate-700 bg-slate-900 text-white hover:border-slate-500 transition-colors"
+                            className="flex items-center justify-center w-10 h-10 rounded-sm border border-slate-700 bg-slate-900 text-white hover:border-slate-500 transition-colors"
                         >
-                            <Shuffle size={14} />
+                            <Shuffle size={16} />
                         </button>
-                        <div className="w-px h-6 bg-slate-800 mx-1" />
-                        <div className="flex items-center gap-1.5">
-                            <Gauge size={12} className="text-slate-500" />
+                        <div className="w-px h-8 bg-slate-800 mx-2" />
+                        <div className="flex items-center gap-2">
+                            <Gauge size={14} className="text-slate-500" />
                             {SPEED_PRESETS.map((preset, idx) => (
                                 <button
                                     key={preset.label}
                                     onClick={() => setSpeedIdx(idx)}
-                                    className={`px-1.5 py-0.5 rounded-sm text-[10px] border transition-colors ${idx === speedIdx
+                                    className={`px-2 py-1 rounded-sm text-xs border transition-colors ${idx === speedIdx
                                             ? "border-blue-600 text-white bg-blue-600/10"
                                             : "border-transparent text-slate-500 hover:text-slate-300"
                                         }`}
@@ -325,9 +325,9 @@ export default function ArrayEngine({ algo }: { algo: AlgoItem }) {
                             ))}
                         </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-slate-500 uppercase tracking-wider">
+                    <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-3">
+                            <span className="text-xs text-slate-500 uppercase tracking-wider font-bold">
                                 Size
                             </span>
                             <input
@@ -336,51 +336,49 @@ export default function ArrayEngine({ algo }: { algo: AlgoItem }) {
                                 max={64}
                                 value={arraySize}
                                 onChange={(e) => handleSizeChange(Number(e.target.value))}
-                                className="w-20 h-1 accent-blue-600"
+                                className="w-32 h-1 accent-blue-600"
                             />
-                            <span className="text-xs text-slate-400 w-6 text-right">
+                            <span className="text-sm font-mono text-slate-300 w-8 text-right">
                                 {arraySize}
                             </span>
                         </div>
-                        <div className="text-xs text-slate-500">
-                            Step <span className="text-white">{stepIndex}</span>
+                        <div className="text-xs text-slate-500 uppercase tracking-widest font-bold">
+                            Step <span className="text-white text-sm ml-1">{stepIndex}</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Canvas - Fixed Height [60vh], Overflow Hidden */}
-                <div className="border border-slate-800 bg-slate-900 p-4 relative flex flex-col justify-end overflow-hidden h-[60vh]">
-                    <div className="absolute top-4 left-4 z-10 flex flex-col gap-1 pointer-events-none">
-                        <span className="text-xs font-mono text-slate-400">
+                <div className="border border-slate-800 bg-slate-900 p-8 relative flex flex-col justify-end overflow-hidden h-[60vh]">
+                    <div className="absolute top-8 left-8 z-10 flex flex-col gap-1 pointer-events-none">
+                        <span className="text-sm font-mono text-slate-400">
                             {">"} {currentStep.description}
                         </span>
                     </div>
 
-                    <div className="absolute bottom-4 right-4 z-20 bg-slate-950/90 backdrop-blur px-3 py-1 border border-slate-800 flex items-center gap-4 text-[10px] pointer-events-none">
-                        <span className="flex items-center gap-1.5">
+                    <div className="absolute bottom-8 right-8 z-20 bg-slate-950/90 backdrop-blur px-4 py-2 border border-slate-800 flex items-center gap-6 text-xs pointer-events-none rounded-sm">
+                        <span className="flex items-center gap-2">
                             <span className="w-2 h-2 bg-[#f59e0b]" />
-                            <span className="text-slate-300 font-medium">CMP</span>
+                            <span className="text-slate-300 font-medium">COMPARE</span>
                         </span>
-                        <span className="flex items-center gap-1.5">
+                        <span className="flex items-center gap-2">
                             <span className="w-2 h-2 bg-[#facc15]" />
-                            <span className="text-slate-300 font-medium">SWP</span>
+                            <span className="text-slate-300 font-medium">SWAP</span>
                         </span>
-                        <span className="flex items-center gap-1.5">
+                        <span className="flex items-center gap-2">
                             <span className="w-2 h-2 bg-[#10b981]" />
-                            <span className="text-slate-300 font-medium">OK</span>
+                            <span className="text-slate-300 font-medium">SORTED</span>
                         </span>
                     </div>
 
-                    <div className="flex items-end gap-[1px] justify-center w-full h-full relative z-0">
+                    <div className="flex items-end gap-[2px] justify-center w-full h-full relative z-0">
                         {currentStep.array.map((value, index) => {
-                            // Strict Height Math: (value / max) * 100
-                            // Clamped to 90% max to prevent overflow
                             const heightPercent = Math.min((value / maxVal) * 100, 90);
 
                             return (
                                 <motion.div
                                     key={index}
-                                    className="relative flex-1 mx-[1px] min-w-[2px] max-w-[40px] z-10"
+                                    className="relative flex-1 mx-[1px] min-w-[4px] max-w-[60px] z-10"
                                     style={{
                                         backgroundColor: getBarColor(index),
                                     }}
@@ -388,12 +386,12 @@ export default function ArrayEngine({ algo }: { algo: AlgoItem }) {
                                         height: `${heightPercent}%`,
                                     }}
                                     transition={{
-                                        duration: 0.1, // Faster industrial feel
+                                        duration: 0.1,
                                     }}
                                 >
-                                    {/* Label Frame: Floating above bar (-top-6), z-50, never hidden */}
-                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none whitespace-nowrap">
-                                        <span className="text-[10px] font-bold text-white block drop-shadow-md">
+                                    {/* Label Frame */}
+                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none whitespace-nowrap">
+                                        <span className="text-xs font-bold text-white block drop-shadow-md">
                                             {value}
                                         </span>
                                     </div>
@@ -405,7 +403,7 @@ export default function ArrayEngine({ algo }: { algo: AlgoItem }) {
             </div>
 
             {/* Code Panel Split */}
-            <div className="grid grid-cols-2 gap-1 h-[200px] shrink-0">
+            <div className="grid grid-cols-2 gap-1 h-[240px] shrink-0">
                 <CodePanel
                     code={BUBBLE_SORT_CODE}
                     activeLine={currentStep.codeLine || null}
@@ -413,13 +411,14 @@ export default function ArrayEngine({ algo }: { algo: AlgoItem }) {
                 />
 
                 <div className="border border-slate-800 bg-slate-950 flex flex-col">
-                    <div className="px-4 py-2 border-b border-slate-800 bg-slate-900">
-                        <span className="text-[10px] uppercase tracking-[0.15em] text-slate-500 font-semibold">
+                    <div className="px-6 py-4 border-b border-slate-800 bg-slate-900">
+                        <span className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold">
                             Algorithm Logic
                         </span>
                     </div>
-                    <div className="p-4 overflow-y-auto">
-                        <p className="text-xs text-slate-400 leading-relaxed font-mono">
+                    {/* Logic Box - p-6 leading-loose */}
+                    <div className="p-6 overflow-y-auto">
+                        <p className="text-sm text-slate-400 leading-loose font-mono">
                             {algo.description}
                         </p>
                     </div>
