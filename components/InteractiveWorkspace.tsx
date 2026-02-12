@@ -2,28 +2,50 @@
 
 import type { AlgoItem } from "@/lib/registry";
 import ArrayEngine from "@/components/visualizers/ArrayEngine";
+import {
+    bubbleSort, bubbleSortCode,
+    selectionSort, selectionSortCode,
+    insertionSort, insertionSortCode,
+    mergeSort, mergeSortCode,
+    quickSort, quickSortCode
+} from "@/core/algorithms/sorting";
+
+// Algorithm Lookup Map
+const ALGO_LOGIC_MAP: Record<string, { gen: any, code: string }> = {
+    "bubble-sort": { gen: bubbleSort, code: bubbleSortCode },
+    "selection-sort": { gen: selectionSort, code: selectionSortCode },
+    "insertion-sort": { gen: insertionSort, code: insertionSortCode },
+    "merge-sort": { gen: mergeSort, code: mergeSortCode },
+    "quick-sort": { gen: quickSort, code: quickSortCode },
+};
+
+// Engine Map
+const ENGINE_MAP: Record<string, React.ComponentType<any>> = {
+    "ArrayEngine": ArrayEngine,
+    // "GridEngine": GridEngine (Future)
+};
 
 export default function InteractiveWorkspace({ algo }: { algo: AlgoItem }) {
+    // Determine the Logic and Engine
+    const LogicData = ALGO_LOGIC_MAP[algo.id];
 
-    // Route to the correct engine based on the algorithm
-    const renderEngine = () => {
-        switch (algo.id) {
-            case "bubble-sort":
-                return <ArrayEngine algo={algo} />;
-            default:
-                return (
-                    <div className="p-8 text-center">
-                        <p className="text-sm text-[var(--color-text-muted)]">
-                            Visualizer engine not found for {algo.title}
-                        </p>
-                    </div>
-                );
-        }
-    };
+    // For now, sorting algorithms default to ArrayEngine if not specified, 
+    // but typically algo.visualizer would define this. For now we assume ArrayEngine for sorting.
+    // Let's deduce engine from category or just default to ArrayEngine for this visualizer.
+    const Engine = ENGINE_MAP["ArrayEngine"];
+
+    if (!Engine || !LogicData) {
+        return (
+            <div className="p-8 text-center">
+                <p className="text-sm text-slate-500">
+                    Visualizer engine or logic not found for {algo.title} ({algo.id})
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className="h-full flex flex-col overflow-hidden bg-slate-950">
-
             {/* Top Header Section - p-8 border-b border-slate-800 */}
             <div className="p-8 border-b border-slate-800 shrink-0 bg-slate-950 z-20 relative">
                 <div className="flex items-end justify-between">
@@ -57,7 +79,11 @@ export default function InteractiveWorkspace({ algo }: { algo: AlgoItem }) {
             {/* Engine Mount - taking remaining height */}
             {/* WRAPPED in p-8 so bars don't touch sides */}
             <div className="flex-1 min-h-0 flex flex-col p-8 overflow-hidden bg-slate-950 relative z-10">
-                {renderEngine()}
+                <Engine
+                    algo={algo}
+                    algorithm={LogicData.gen}
+                    code={LogicData.code}
+                />
             </div>
         </div>
     );

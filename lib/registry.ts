@@ -33,7 +33,7 @@ export const REGISTRY: AlgoItem[] = [
         id: "selection-sort",
         title: "Selection Sort",
         category: "Sorting",
-        status: "blueprint",
+        status: "active",
         complexity: { time: "O(n²)", space: "O(1)" },
         description:
             "Divides the input list into a sorted and unsorted region. It repeatedly selects the smallest (or largest) element from the unsorted region and moves it to the end of the sorted region. Performs fewer swaps than Bubble Sort but has the same time complexity.",
@@ -42,7 +42,7 @@ export const REGISTRY: AlgoItem[] = [
         id: "insertion-sort",
         title: "Insertion Sort",
         category: "Sorting",
-        status: "blueprint",
+        status: "active",
         complexity: { time: "O(n²)", space: "O(1)" },
         description:
             "Builds the sorted array one item at a time by repeatedly picking the next item and inserting it into the correct position among the previously sorted items. Efficient for small or nearly-sorted datasets. Serves as the base case for hybrid sorts like TimSort.",
@@ -51,7 +51,7 @@ export const REGISTRY: AlgoItem[] = [
         id: "merge-sort",
         title: "Merge Sort",
         category: "Sorting",
-        status: "blueprint",
+        status: "active",
         complexity: { time: "O(n log n)", space: "O(n)" },
         description:
             "A divide-and-conquer algorithm that splits the array in half, recursively sorts each half, and then merges the two sorted halves. Guarantees O(n log n) performance regardless of input. Stable sort widely used in practice, including as the default in many standard libraries.",
@@ -60,7 +60,7 @@ export const REGISTRY: AlgoItem[] = [
         id: "quick-sort",
         title: "Quick Sort",
         category: "Sorting",
-        status: "blueprint",
+        status: "active",
         complexity: { time: "O(n log n) avg", space: "O(log n)" },
         description:
             "Selects a 'pivot' element and partitions the array around it so that elements less than the pivot come before it and elements greater come after. Recursively sorts the sub-arrays. Average-case O(n log n) with excellent cache performance despite O(n²) worst case.",

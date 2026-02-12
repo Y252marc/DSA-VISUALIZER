@@ -12,33 +12,11 @@ import {
 } from "lucide-react";
 import type { AlgoItem } from "@/lib/registry";
 import CodePanel from "@/components/CodePanel";
+import { SortStep } from "@/core/types";
 
 // ---------------------------------------------------------------------------
 // Constants & Types
 // ---------------------------------------------------------------------------
-
-const BUBBLE_SORT_CODE = `procedure bubbleSort(A: list of sortable items)
-  n := length(A)
-  repeat
-    swapped := false
-    for i := 1 to n-1 inclusive do
-      if A[i-1] > A[i] then
-        swap(A[i-1], A[i])
-        swapped := true
-      end if
-    end for
-    n := n - 1
-  until not swapped
-end procedure`;
-
-interface SortStep {
-    array: number[];
-    comparing: [number, number] | null;
-    swapped: [number, number] | null;
-    sorted: number[];
-    description: string;
-    codeLine?: number; // 1-indexed
-}
 
 const SPEED_PRESETS = [
     { label: "0.25×", ms: 1000 },
@@ -52,107 +30,17 @@ const INITIAL_ARRAY = [
     64, 34, 25, 12, 22, 11, 90, 45, 33, 21, 56, 78, 89, 43, 67, 10, 5, 95, 23, 87, 44, 30, 99, 15
 ];
 
-// ---------------------------------------------------------------------------
-// Generator
-// ---------------------------------------------------------------------------
-
-function* bubbleSortGenerator(input: number[]): Generator<SortStep> {
-    const arr = [...input];
-    const n = arr.length;
-    const sorted: number[] = [];
-
-    yield {
-        array: [...arr],
-        comparing: null,
-        swapped: null,
-        sorted: [],
-        description: `Starting Bubble Sort on ${n} elements`,
-        codeLine: 1,
-    };
-
-    let len = n;
-    let swapped;
-
-    do {
-        swapped = false;
-        yield {
-            array: [...arr],
-            comparing: null,
-            swapped: null,
-            sorted: [...sorted],
-            description: `Pass started. n = ${len}`,
-            codeLine: 4,
-        };
-
-        for (let i = 1; i < len; i++) {
-            yield {
-                array: [...arr],
-                comparing: [i - 1, i],
-                swapped: null,
-                sorted: [...sorted],
-                description: `Comparing ${arr[i - 1]} and ${arr[i]}`,
-                codeLine: 6,
-            };
-
-            if (arr[i - 1] > arr[i]) {
-                [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
-                swapped = true;
-
-                yield {
-                    array: [...arr],
-                    comparing: null,
-                    swapped: [i - 1, i],
-                    sorted: [...sorted],
-                    description: `Swapped ${arr[i]} and ${arr[i - 1]}`,
-                    codeLine: 7,
-                };
-
-                yield {
-                    array: [...arr],
-                    comparing: null,
-                    swapped: null,
-                    sorted: [...sorted],
-                    description: "Swapped marked true",
-                    codeLine: 8,
-                }
-            }
-        }
-
-        len--;
-        sorted.push(len);
-
-        yield {
-            array: [...arr],
-            comparing: null,
-            swapped: null,
-            sorted: [...sorted],
-            description: `Pass complete. n reduced to ${len}`,
-            codeLine: 11,
-        };
-
-    } while (swapped);
-
-    const allIndices = Array.from({ length: n }, (_, i) => i);
-
-    yield {
-        array: [...arr],
-        comparing: null,
-        swapped: null,
-        sorted: allIndices,
-        description: "Sorting complete.",
-        codeLine: 13,
-    };
-}
-
-function generateRandomArray(size: number): number[] {
-    return Array.from({ length: size }, () => Math.floor(Math.random() * 95) + 5);
+interface ArrayEngineProps {
+    algo: AlgoItem;
+    algorithm: (input: number[]) => Generator<SortStep>;
+    code: string;
 }
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export default function ArrayEngine({ algo }: { algo: AlgoItem }) {
+export default function ArrayEngine({ algo, algorithm, code }: ArrayEngineProps) {
     const [arraySize, setArraySize] = useState(24);
     const [baseArray, setBaseArray] = useState<number[]>(INITIAL_ARRAY);
 
@@ -174,7 +62,7 @@ export default function ArrayEngine({ algo }: { algo: AlgoItem }) {
 
     const initGenerator = useCallback(
         (arr: number[]) => {
-            generatorRef.current = bubbleSortGenerator(arr);
+            generatorRef.current = algorithm(arr);
             setStepIndex(0);
             setIsComplete(false);
             setCurrentStep({
@@ -186,7 +74,7 @@ export default function ArrayEngine({ algo }: { algo: AlgoItem }) {
                 codeLine: undefined,
             });
         },
-        []
+        [algorithm]
     );
 
     const step = useCallback(() => {
@@ -232,7 +120,8 @@ export default function ArrayEngine({ algo }: { algo: AlgoItem }) {
     const randomize = useCallback(() => {
         setIsPlaying(false);
         if (intervalRef.current) clearInterval(intervalRef.current);
-        const newArr = generateRandomArray(arraySize);
+        // Helper to generate distinct values for clearer visuals
+        const newArr = Array.from({ length: arraySize }, () => Math.floor(Math.random() * 95) + 5);
         setBaseArray(newArr);
         initGenerator(newArr);
     }, [arraySize, initGenerator]);
@@ -242,35 +131,57 @@ export default function ArrayEngine({ algo }: { algo: AlgoItem }) {
             setArraySize(newSize);
             setIsPlaying(false);
             if (intervalRef.current) clearInterval(intervalRef.current);
-            const newArr = generateRandomArray(newSize);
+            const newArr = Array.from({ length: newSize }, () => Math.floor(Math.random() * 95) + 5);
             setBaseArray(newArr);
             initGenerator(newArr);
         },
         [initGenerator]
     );
 
+    // Re-init when algo/algorithm changes
     useEffect(() => {
         initGenerator(baseArray);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [algo.id, algorithm]);
+
 
     const maxVal = Math.max(...currentStep.array, 1);
 
-    // INDUSTRIAL COLORS
+    // -------------------------------------------------------------------------
+    // RENDER LOGIC for BAR COLORS
+    // -------------------------------------------------------------------------
     const getBarColor = (index: number) => {
-        if (currentStep.sorted.includes(index)) return "#10b981"; // Green-500
-        if (
-            currentStep.swapped &&
-            (index === currentStep.swapped[0] || index === currentStep.swapped[1])
-        )
-            return "#facc15"; // Yellow-400 (Active Neon)
-        if (
-            currentStep.comparing &&
-            (index === currentStep.comparing[0] ||
-                index === currentStep.comparing[1])
-        )
-            return "#f59e0b"; // Amber-500
-        return "#2563eb"; // Blue-600 (Terminal Blue)
+        // 1. Overwrite Flash (White)
+        if (currentStep.overwrite === index) return "#ffffff";
+
+        // 2. Pivot (Purple) - High Priority
+        if (currentStep.pivot === index) return "#a855f7"; // purple-500
+
+        // 3. Selection Min (Pink)
+        if (currentStep.min === index) return "#ec4899"; // pink-500
+
+        // 4. Insertion Key (Orange)
+        if (currentStep.key === index) return "#f97316"; // orange-500
+
+        // 5. Comparison / Swapped (Standard)
+        if (currentStep.swapped && (index === currentStep.swapped[0] || index === currentStep.swapped[1])) return "#facc15"; // yellow-400
+        if (currentStep.comparing && currentStep.comparing.includes(index)) return "#f59e0b"; // amber-500
+
+        // 6. Scanners (Left/Right)
+        if (currentStep.left === index) return "#06b6d4"; // cyan-500
+        if (currentStep.right === index) return "#facc15"; // yellow-400 (reuse yellow)
+
+        // 7. Sorted
+        if (currentStep.sorted.includes(index)) return "#10b981"; // green-500
+
+        // 8. Range Highlight (Range is handled by background, but modify bar too?)
+        // If inside range, maybe slightly lighter blue?
+        if (currentStep.range) {
+            const [start, end] = currentStep.range;
+            if (index >= start && index <= end) return "#3b82f6"; // blue-500 (standard active)
+        }
+
+        return "#1e40af"; // blue-800 (default inactive/darker)
     };
 
     return (
@@ -316,8 +227,8 @@ export default function ArrayEngine({ algo }: { algo: AlgoItem }) {
                                     key={preset.label}
                                     onClick={() => setSpeedIdx(idx)}
                                     className={`px-2 py-1 rounded-sm text-xs border transition-colors ${idx === speedIdx
-                                            ? "border-blue-600 text-white bg-blue-600/10"
-                                            : "border-transparent text-slate-500 hover:text-slate-300"
+                                        ? "border-blue-600 text-white bg-blue-600/10"
+                                        : "border-transparent text-slate-500 hover:text-slate-300"
                                         }`}
                                 >
                                     {preset.label}
@@ -350,6 +261,17 @@ export default function ArrayEngine({ algo }: { algo: AlgoItem }) {
 
                 {/* Canvas - Fixed Height [60vh], Overflow Hidden */}
                 <div className="border border-slate-800 bg-slate-900 p-8 relative flex flex-col justify-end overflow-hidden h-[60vh]">
+                    {/* Range Highlight Background */}
+                    {currentStep.range && (
+                        <div
+                            className="absolute bottom-0 top-0 bg-blue-500/5 border-x border-blue-500/20 transition-all duration-100 pointer-events-none z-0"
+                            style={{
+                                left: `calc(32px + (100% - 64px) * ${currentStep.range[0] / arraySize})`,
+                                width: `calc((100% - 64px) * ${(currentStep.range[1] - currentStep.range[0] + 1) / arraySize})`
+                            }}
+                        />
+                    )}
+
                     <div className="absolute top-8 left-8 z-10 flex flex-col gap-1 pointer-events-none">
                         <span className="text-sm font-mono text-slate-400">
                             {">"} {currentStep.description}
@@ -371,7 +293,7 @@ export default function ArrayEngine({ algo }: { algo: AlgoItem }) {
                         </span>
                     </div>
 
-                    <div className="flex items-end gap-[2px] justify-center w-full h-full relative z-0">
+                    <div className="flex items-end gap-[2px] justify-center w-full h-full relative z-10">
                         {currentStep.array.map((value, index) => {
                             const heightPercent = Math.min((value / maxVal) * 100, 90);
 
@@ -405,7 +327,7 @@ export default function ArrayEngine({ algo }: { algo: AlgoItem }) {
             {/* Code Panel Split */}
             <div className="grid grid-cols-2 gap-1 h-[240px] shrink-0">
                 <CodePanel
-                    code={BUBBLE_SORT_CODE}
+                    code={code}
                     activeLine={currentStep.codeLine || null}
                     language="python"
                 />
