@@ -8,63 +8,48 @@ export type AlgoItem = {
     title: string;
     category: string;
     status: "active" | "blueprint";
+    visualizer?: "ArrayEngine" | "TreeSortEngine";
+    visualMode?: "bars" | "bars-lift" | "bars-scanner" | "blocks-split";
     complexity: { time: string; space: string };
     description: string;
+    logic?: any; // Generator function
+    theory?: AlgoTheory; // Rich text content
 };
+
+export interface AlgoTheory {
+    definition: string;
+    steps?: string[];
+    complexity: {
+        time: string;
+        space: string;
+        best?: string;
+        worst?: string;
+        analysis?: string;
+    };
+    pros: string[];
+    cons: string[];
+    code?: string;
+}
 
 // ---------------------------------------------------------------------------
 // THE REGISTRY — 80+ algorithms across 10 categories
 // ---------------------------------------------------------------------------
 
+import { MergeSortManifest } from "@/core/algorithms/sorting/merge-sort";
+import { BubbleSortManifest } from "@/core/algorithms/sorting/bubble-sort";
+import { QuickSortManifest } from "@/core/algorithms/sorting/quick-sort";
+import { InsertionSortManifest } from "@/core/algorithms/sorting/insertion-sort";
+import { SelectionSortManifest } from "@/core/algorithms/sorting/selection-sort";
+
 export const REGISTRY: AlgoItem[] = [
     // ==========================================================================
     // SORTING (12)
     // ==========================================================================
-    {
-        id: "bubble-sort",
-        title: "Bubble Sort",
-        category: "Sorting",
-        status: "active",
-        complexity: { time: "O(n²)", space: "O(1)" },
-        description:
-            "Repeatedly steps through the list, compares adjacent elements and swaps them if they are in the wrong order. The pass through the list is repeated until the list is sorted. Named for the way smaller elements 'bubble' to the top of the list. While simple to understand, it is inefficient for large datasets.",
-    },
-    {
-        id: "selection-sort",
-        title: "Selection Sort",
-        category: "Sorting",
-        status: "active",
-        complexity: { time: "O(n²)", space: "O(1)" },
-        description:
-            "Divides the input list into a sorted and unsorted region. It repeatedly selects the smallest (or largest) element from the unsorted region and moves it to the end of the sorted region. Performs fewer swaps than Bubble Sort but has the same time complexity.",
-    },
-    {
-        id: "insertion-sort",
-        title: "Insertion Sort",
-        category: "Sorting",
-        status: "active",
-        complexity: { time: "O(n²)", space: "O(1)" },
-        description:
-            "Builds the sorted array one item at a time by repeatedly picking the next item and inserting it into the correct position among the previously sorted items. Efficient for small or nearly-sorted datasets. Serves as the base case for hybrid sorts like TimSort.",
-    },
-    {
-        id: "merge-sort",
-        title: "Merge Sort",
-        category: "Sorting",
-        status: "active",
-        complexity: { time: "O(n log n)", space: "O(n)" },
-        description:
-            "A divide-and-conquer algorithm that splits the array in half, recursively sorts each half, and then merges the two sorted halves. Guarantees O(n log n) performance regardless of input. Stable sort widely used in practice, including as the default in many standard libraries.",
-    },
-    {
-        id: "quick-sort",
-        title: "Quick Sort",
-        category: "Sorting",
-        status: "active",
-        complexity: { time: "O(n log n) avg", space: "O(log n)" },
-        description:
-            "Selects a 'pivot' element and partitions the array around it so that elements less than the pivot come before it and elements greater come after. Recursively sorts the sub-arrays. Average-case O(n log n) with excellent cache performance despite O(n²) worst case.",
-    },
+    BubbleSortManifest,
+    SelectionSortManifest,
+    InsertionSortManifest,
+    MergeSortManifest,
+    QuickSortManifest,
     {
         id: "heap-sort",
         title: "Heap Sort",

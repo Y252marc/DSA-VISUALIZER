@@ -1,4 +1,8 @@
 import { SortStep } from "@/core/types";
+import { secondsToMilliseconds } from "framer-motion";
+import { button } from "framer-motion/client";
+import { setReactDebugChannelForHtmlRequest } from "next/dist/server/dev/debug-channel";
+import { ButtonHTMLAttributes } from "react";
 
 export const mergeSortCode = `procedure mergeSort(A: list)
   if length(A) <= 1 then

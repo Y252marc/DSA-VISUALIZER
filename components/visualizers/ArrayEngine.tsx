@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
     Play,
     Pause,
@@ -9,9 +9,9 @@ import {
     RotateCcw,
     Shuffle,
     Gauge,
+    ScanLine,
 } from "lucide-react";
 import type { AlgoItem } from "@/lib/registry";
-import CodePanel from "@/components/CodePanel";
 import { SortStep } from "@/core/types";
 
 // ---------------------------------------------------------------------------
@@ -120,7 +120,6 @@ export default function ArrayEngine({ algo, algorithm, code }: ArrayEngineProps)
     const randomize = useCallback(() => {
         setIsPlaying(false);
         if (intervalRef.current) clearInterval(intervalRef.current);
-        // Helper to generate distinct values for clearer visuals
         const newArr = Array.from({ length: arraySize }, () => Math.floor(Math.random() * 95) + 5);
         setBaseArray(newArr);
         initGenerator(newArr);
@@ -138,57 +137,134 @@ export default function ArrayEngine({ algo, algorithm, code }: ArrayEngineProps)
         [initGenerator]
     );
 
-    // Re-init when algo/algorithm changes
     useEffect(() => {
         initGenerator(baseArray);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [algo.id, algorithm]);
 
-
     const maxVal = Math.max(...currentStep.array, 1);
+    const mode = algo.visualMode || "bars";
 
     // -------------------------------------------------------------------------
-    // RENDER LOGIC for BAR COLORS
+    // RENDER HELPERS
     // -------------------------------------------------------------------------
     const getBarColor = (index: number) => {
-        // 1. Overwrite Flash (White)
-        if (currentStep.overwrite === index) return "#ffffff";
+        if (currentStep.overwrite === index) return "#ffffff"; // White Flash
+        if (currentStep.key === index) return "#f97316"; // Orange (Insertion Key)
+        if (currentStep.min === index) return "#ec4899"; // Pink (Selection Min)
+        if (currentStep.pivot === index) return "#a855f7"; // Purple (Quick Pivot)
+        if (currentStep.swapped && (index === currentStep.swapped[0] || index === currentStep.swapped[1])) return "#facc15"; // Yellow
+        if (currentStep.comparing && currentStep.comparing.includes(index)) return "#f59e0b"; // Amber (Compare)
+        if (currentStep.left === index) return "#06b6d4"; // Cyan
+        if (currentStep.right === index) return "#facc15"; // Yellow
+        if (currentStep.sorted.includes(index)) return "#10b981"; // Green
 
-        // 2. Pivot (Purple) - High Priority
-        if (currentStep.pivot === index) return "#a855f7"; // purple-500
-
-        // 3. Selection Min (Pink)
-        if (currentStep.min === index) return "#ec4899"; // pink-500
-
-        // 4. Insertion Key (Orange)
-        if (currentStep.key === index) return "#f97316"; // orange-500
-
-        // 5. Comparison / Swapped (Standard)
-        if (currentStep.swapped && (index === currentStep.swapped[0] || index === currentStep.swapped[1])) return "#facc15"; // yellow-400
-        if (currentStep.comparing && currentStep.comparing.includes(index)) return "#f59e0b"; // amber-500
-
-        // 6. Scanners (Left/Right)
-        if (currentStep.left === index) return "#06b6d4"; // cyan-500
-        if (currentStep.right === index) return "#facc15"; // yellow-400 (reuse yellow)
-
-        // 7. Sorted
-        if (currentStep.sorted.includes(index)) return "#10b981"; // green-500
-
-        // 8. Range Highlight (Range is handled by background, but modify bar too?)
-        // If inside range, maybe slightly lighter blue?
+        // Range Highlight
         if (currentStep.range) {
             const [start, end] = currentStep.range;
-            if (index >= start && index <= end) return "#3b82f6"; // blue-500 (standard active)
+            if (index >= start && index <= end) return "#3b82f6"; // Blue Active
         }
 
-        return "#1e40af"; // blue-800 (default inactive/darker)
+        return "#1e40af"; // Blue Inactive
     };
 
+    // -------------------------------------------------------------------------
+    // RENDERERS
+    // -------------------------------------------------------------------------
+
+    // Mode A: "The Split" (Blocks)
+    const renderBlocks = () => {
+        // Identify split points. For simplicity, if we have 'splits' in currentStep, we could augment margins?
+        // Implementing true detailed recursive split visualization is complex. 
+        // Strategy: Use margin-right on elements that are split points.
+
+        const splitIndices = new Set(currentStep.splits || []);
+
+        return (
+            <div className="flex items-center justify-center gap-1 w-full h-full p-4 overflow-x-auto">
+                <AnimatePresence>
+                    {currentStep.array.map((value, index) => {
+                        const color = getBarColor(index);
+                        const isSplit = splitIndices.has(index);
+                        const isPivot = currentStep.pivot === index;
+
+                        return (
+                            <motion.div
+                                key={`${index}-${value}`} // Key by index-value to animate movements
+                                layoutId={`block-${index}`}
+                                className={`
+                                    relative flex items-center justify-center 
+                                    w-10 h-10 md:w-12 md:h-12 
+                                    rounded-sm shadow-lg border-2 border-slate-700/50
+                                    text-sm font-bold text-white
+                                    ${isSplit ? "mr-8" : "mr-0"}
+                                    transition-all duration-300
+                                `}
+                                style={{
+                                    backgroundColor: color,
+                                    borderColor: isPivot ? "#a855f7" : "rgba(51,65,85,0.5)",
+                                    y: isPivot ? -20 : 0, // Detach pivot
+                                }}
+                            >
+                                {value}
+                            </motion.div>
+                        );
+                    })}
+                </AnimatePresence>
+            </div>
+        );
+    }
+
+    // Mode B: "The Lifter" (Bars with Lift) & Mode C "Scanner" (Standard Bars)
+    const renderBars = () => {
+        return (
+            <div className="flex items-end gap-[2px] justify-center w-full h-full relative z-10 px-4">
+                {currentStep.array.map((value, index) => {
+                    const heightPercent = Math.min((value / maxVal) * 100, 90);
+                    const color = getBarColor(index);
+                    const isLifted = currentStep.lift === index;
+                    const isMin = currentStep.min === index;
+
+                    return (
+                        <motion.div
+                            key={index}
+                            className="relative flex-1 mx-[1px] min-w-[4px] max-w-[60px] z-10 rounded-t-sm"
+                            style={{
+                                backgroundColor: color,
+                            }}
+                            animate={{
+                                height: `${heightPercent}%`,
+                                y: isLifted ? -30 : 0, // LIFT ACTION
+                            }}
+                            transition={{
+                                duration: 0.15, // Smooth lift
+                            }}
+                        >
+                            {/* Label Frame */}
+                            {mode === "bars-scanner" && isMin && (
+                                <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+                                    <ScanLine size={16} className="text-pink-500 animate-pulse" />
+                                </div>
+                            )}
+
+                            {/* Standard Top Label */}
+                            <div className={`absolute -top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none whitespace-nowrap transition-opacity ${arraySize > 40 ? 'opacity-0' : 'opacity-100'}`}>
+                                <span className={`text-[10px] font-bold block drop-shadow-md ${isLifted ? "text-orange-400 scale-125" : "text-white"}`}>
+                                    {value}
+                                </span>
+                            </div>
+                        </motion.div>
+                    );
+                })}
+            </div>
+        );
+    }
+
     return (
-        <div className="flex flex-col h-[calc(100vh-140px)] gap-1">
+        <div className="flex flex-col gap-1">
             {/* Top Section: Visualization */}
             <div className="flex-1 flex flex-col space-y-1 min-h-0">
-                {/* Controls - Size/Speed Row - UPDATED to py-4 or py-6 as requested */}
+                {/* Controls - Size/Speed Row */}
                 <div className="flex items-center justify-between border border-slate-800 bg-slate-950 px-6 py-4 shrink-0">
                     <div className="flex items-center gap-4">
                         <button
@@ -244,7 +320,7 @@ export default function ArrayEngine({ algo, algorithm, code }: ArrayEngineProps)
                             <input
                                 type="range"
                                 min={8}
-                                max={64}
+                                max={60} // Limit for bars to prevent overcrowding
                                 value={arraySize}
                                 onChange={(e) => handleSizeChange(Number(e.target.value))}
                                 className="w-32 h-1 accent-blue-600"
@@ -261,22 +337,18 @@ export default function ArrayEngine({ algo, algorithm, code }: ArrayEngineProps)
 
                 {/* Canvas - Fixed Height [60vh], Overflow Hidden */}
                 <div className="border border-slate-800 bg-slate-900 p-8 relative flex flex-col justify-end overflow-hidden h-[60vh]">
-                    {/* Range Highlight Background */}
-                    {currentStep.range && (
+                    {/* Range Highlight Background (Only for Bars mostly, could apply to blocks too) */}
+                    {mode.startsWith("bars") && currentStep.range && (
                         <div
                             className="absolute bottom-0 top-0 bg-blue-500/5 border-x border-blue-500/20 transition-all duration-100 pointer-events-none z-0"
                             style={{
-                                left: `calc(32px + (100% - 64px) * ${currentStep.range[0] / arraySize})`,
-                                width: `calc((100% - 64px) * ${(currentStep.range[1] - currentStep.range[0] + 1) / arraySize})`
+                                left: `calc(16px + (100% - 32px) * ${currentStep.range[0] / arraySize})`, // Adjusted checks
+                                width: `calc((100% - 32px) * ${(currentStep.range[1] - currentStep.range[0] + 1) / arraySize})`
                             }}
                         />
                     )}
 
-                    <div className="absolute top-8 left-8 z-10 flex flex-col gap-1 pointer-events-none">
-                        <span className="text-sm font-mono text-slate-400">
-                            {">"} {currentStep.description}
-                        </span>
-                    </div>
+                    {/* Absolute status text removed - moved to dedicated bar */}
 
                     <div className="absolute bottom-8 right-8 z-20 bg-slate-950/90 backdrop-blur px-4 py-2 border border-slate-800 flex items-center gap-6 text-xs pointer-events-none rounded-sm">
                         <span className="flex items-center gap-2">
@@ -284,8 +356,12 @@ export default function ArrayEngine({ algo, algorithm, code }: ArrayEngineProps)
                             <span className="text-slate-300 font-medium">COMPARE</span>
                         </span>
                         <span className="flex items-center gap-2">
-                            <span className="w-2 h-2 bg-[#facc15]" />
-                            <span className="text-slate-300 font-medium">SWAP</span>
+                            {mode === "bars-lift" ? (
+                                <span className="w-2 h-2 bg-[#f97316]" />
+                            ) : (
+                                <span className="w-2 h-2 bg-[#facc15]" />
+                            )}
+                            <span className="text-slate-300 font-medium">{mode === "bars-lift" ? "INSERT" : "SWAP"}</span>
                         </span>
                         <span className="flex items-center gap-2">
                             <span className="w-2 h-2 bg-[#10b981]" />
@@ -293,58 +369,15 @@ export default function ArrayEngine({ algo, algorithm, code }: ArrayEngineProps)
                         </span>
                     </div>
 
-                    <div className="flex items-end gap-[2px] justify-center w-full h-full relative z-10">
-                        {currentStep.array.map((value, index) => {
-                            const heightPercent = Math.min((value / maxVal) * 100, 90);
+                    {/* RENDERER SWITCH */}
+                    {mode === "blocks-split" ? renderBlocks() : renderBars()}
 
-                            return (
-                                <motion.div
-                                    key={index}
-                                    className="relative flex-1 mx-[1px] min-w-[4px] max-w-[60px] z-10"
-                                    style={{
-                                        backgroundColor: getBarColor(index),
-                                    }}
-                                    animate={{
-                                        height: `${heightPercent}%`,
-                                    }}
-                                    transition={{
-                                        duration: 0.1,
-                                    }}
-                                >
-                                    {/* Label Frame */}
-                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none whitespace-nowrap">
-                                        <span className="text-xs font-bold text-white block drop-shadow-md">
-                                            {value}
-                                        </span>
-                                    </div>
-                                </motion.div>
-                            );
-                        })}
-                    </div>
                 </div>
             </div>
 
-            {/* Code Panel Split */}
-            <div className="grid grid-cols-2 gap-1 h-[240px] shrink-0">
-                <CodePanel
-                    code={code}
-                    activeLine={currentStep.codeLine || null}
-                    language="python"
-                />
-
-                <div className="border border-slate-800 bg-slate-950 flex flex-col">
-                    <div className="px-6 py-4 border-b border-slate-800 bg-slate-900">
-                        <span className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold">
-                            Algorithm Logic
-                        </span>
-                    </div>
-                    {/* Logic Box - p-6 leading-loose */}
-                    <div className="p-6 overflow-y-auto">
-                        <p className="text-sm text-slate-400 leading-loose font-mono">
-                            {algo.description}
-                        </p>
-                    </div>
-                </div>
+            {/* Status Bar */}
+            <div className="w-full py-3 px-6 bg-slate-950 border-t border-b border-slate-800 font-mono text-sm text-blue-400 shrink-0">
+                {">"} {currentStep.description}
             </div>
         </div>
     );

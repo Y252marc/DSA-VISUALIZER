@@ -2,6 +2,9 @@
 
 import type { AlgoItem } from "@/lib/registry";
 import ArrayEngine from "@/components/visualizers/ArrayEngine";
+import TreeSortEngine from "@/components/visualizers/TreeSortEngine";
+import CodePanel from "@/components/CodePanel";
+import TheorySection from "@/components/TheorySection";
 import {
     bubbleSort, bubbleSortCode,
     selectionSort, selectionSortCode,
@@ -22,17 +25,12 @@ const ALGO_LOGIC_MAP: Record<string, { gen: any, code: string }> = {
 // Engine Map
 const ENGINE_MAP: Record<string, React.ComponentType<any>> = {
     "ArrayEngine": ArrayEngine,
-    // "GridEngine": GridEngine (Future)
+    "TreeSortEngine": TreeSortEngine,
 };
 
 export default function InteractiveWorkspace({ algo }: { algo: AlgoItem }) {
-    // Determine the Logic and Engine
     const LogicData = ALGO_LOGIC_MAP[algo.id];
-
-    // For now, sorting algorithms default to ArrayEngine if not specified, 
-    // but typically algo.visualizer would define this. For now we assume ArrayEngine for sorting.
-    // Let's deduce engine from category or just default to ArrayEngine for this visualizer.
-    const Engine = ENGINE_MAP["ArrayEngine"];
+    const Engine = ENGINE_MAP[algo.visualizer || "ArrayEngine"];
 
     if (!Engine || !LogicData) {
         return (
@@ -45,8 +43,8 @@ export default function InteractiveWorkspace({ algo }: { algo: AlgoItem }) {
     }
 
     return (
-        <div className="h-full flex flex-col overflow-hidden bg-slate-950">
-            {/* Top Header Section - p-8 border-b border-slate-800 */}
+        <div className="bg-slate-950">
+            {/* ── HEADER ───────────────────────────────────────── */}
             <div className="p-8 border-b border-slate-800 shrink-0 bg-slate-950 z-20 relative">
                 <div className="flex items-end justify-between">
                     <div>
@@ -62,7 +60,7 @@ export default function InteractiveWorkspace({ algo }: { algo: AlgoItem }) {
                     </div>
 
                     {/* Complexity Stats */}
-                    <div className="flex gap-8 text-xs font-mono text-slate-500 uppercase tracking-widest border border-slate-800 px-6 py-4 rounded-sm bg-slate-900/50">
+                    <div className="hidden sm:flex gap-8 text-xs font-mono text-slate-500 uppercase tracking-widest border border-slate-800 px-6 py-4 rounded-sm bg-slate-900/50">
                         <span className="flex gap-3">
                             <span className="text-slate-600 font-bold">Time</span>
                             <span className="text-slate-300">{algo.complexity.time}</span>
@@ -76,14 +74,45 @@ export default function InteractiveWorkspace({ algo }: { algo: AlgoItem }) {
                 </div>
             </div>
 
-            {/* Engine Mount - taking remaining height */}
-            {/* WRAPPED in p-8 so bars don't touch sides */}
-            <div className="flex-1 min-h-0 flex flex-col p-8 overflow-hidden bg-slate-950 relative z-10">
-                <Engine
-                    algo={algo}
-                    algorithm={LogicData.gen}
-                    code={LogicData.code}
-                />
+            {/* ── SPLIT VIEW: Visualizer (Left) + Code (Right) ── */}
+            <div className="p-4 lg:p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_450px] gap-4 h-auto lg:h-[65vh]">
+
+                    {/* LEFT COLUMN — Visualizer + Status Bar */}
+                    <div className="relative flex flex-col h-[60vh] lg:h-full bg-slate-950 rounded-lg border border-slate-800 overflow-hidden">
+                        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+                            <Engine
+                                algo={algo}
+                                algorithm={LogicData.gen}
+                                code={LogicData.code}
+                            />
+                        </div>
+                    </div>
+
+                    {/* RIGHT COLUMN — Code Panel */}
+                    <div className="h-[400px] lg:h-full bg-slate-950 rounded-lg border border-slate-800 overflow-hidden">
+                        <CodePanel
+                            code={LogicData.code}
+                            activeLine={null}
+                            language="python"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* ── THEORY ARTICLE — Below the grid ──────────────── */}
+            <div className="w-full flex justify-center bg-slate-950 border-t border-slate-900 mt-10 py-12">
+                <div className="w-full max-w-5xl mx-auto px-6">
+                    {algo.theory ? (
+                        <TheorySection
+                            title={algo.title}
+                            theory={algo.theory}
+                            description={algo.description}
+                        />
+                    ) : (
+                        <p className="text-slate-500 text-center">No theory data available.</p>
+                    )}
+                </div>
             </div>
         </div>
     );

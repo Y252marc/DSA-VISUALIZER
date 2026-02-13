@@ -16,10 +16,13 @@ export default async function VisualizerPage({ params }: PageProps) {
         notFound();
     }
 
+    // Sanitize: Only strip 'logic' (function). 'theory' is data and safe to pass.
+    const { logic, ...serializableAlgo } = algo;
+
     return (
         <MainLayout>
             {algo.status === "active" ? (
-                <InteractiveWorkspace algo={algo} />
+                <InteractiveWorkspace algo={serializableAlgo} />
             ) : (
                 <BlueprintSpec algo={algo} />
             )}
