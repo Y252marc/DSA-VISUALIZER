@@ -1,5 +1,51 @@
 # CHANGELOG.md — DSA Visualizer Platform
 
+## [0.6.1] — 2026-02-13 — Sidebar Auto-Open & Editable Search Target
+
+### Fixed
+- **Sidebar.tsx**: Category folder now auto-opens when the user navigates to a page inside it — `openCategories` initializes by matching `pathname` against `REGISTRY` to find the active algorithm's category
+- **Footer Removed**: Deleted the footer entirely as requested
+- **Layout Spacing**: Added `pt-16` (64px) top padding to content for 1.5cm header gap, and an `h-32` (128px) bottom spacer for 3cm scroll buffer
+- **Header Spacing**: Added `h-14` (56px ~ 1.5cm) physical spacer div above the header to guarantee top gap, reverting padding to standard `p-8`
+- **Side Margins**: Added `px-4` (16px ~ 4mm) to the main container to create consistent side gaps
+- **Dashboard Layout**: Applied the same `h-14` top spacer and `px-4` side margins to the main dashboard (`app/page.tsx`) for consistency
+
+### Changed
+- **SearchEngine.tsx**: Target display replaced with an editable `input[type=number]` — dark bg, blue border, focus glow styling; typing a new number re-initializes the generator to search for it
+- **SearchEngine.tsx**: Added "Randomize Target" button (`Dices` icon) next to the input — picks a random value from the current array
+
+## [0.6.0] — 2026-02-13 — Searching Module (Linear & Binary Search)
+
+### Added
+- **New Category**: Searching — first two algorithms activated
+- **Linear Search** (`core/algorithms/searching/linear-search/`): Sequential scan generator yielding `scan`, `found`, `not-found` steps; textbook-grade theory with definition, steps, complexity analysis, pros/cons, and Python code
+- **Binary Search** (`core/algorithms/searching/binary-search/`): Divide-and-conquer generator with auto-sort, yielding `range`, `mid`, `found`, `not-found` steps; full theory file
+- **SearchStep Type** (`core/types.ts`): New interface with `type`, `index`, `rangeStart`, `rangeEnd`, `target` fields
+- **SearchEngine** (`components/visualizers/SearchEngine.tsx`): Block/card-style visualizer (not bars) with:
+  - Target display banner at the top
+  - Yellow highlight for scanning (Linear Search)
+  - Purple highlight for mid-point (Binary Search)
+  - Green highlight + glow for found
+  - Red tint for not-found
+  - Opacity dimming (`opacity-30`) for out-of-range indices (Binary Search)
+  - Full playback controls (Play/Pause/Step/Reset/Randomize/Speed/Size)
+  - `onStepChange` callback for code panel sync
+
+### Changed
+- **registry.ts**: Added `SearchEngine` to `visualizer` union type; imported `LinearSearchManifest` and `BinarySearchManifest`; replaced blueprint entries with active manifests
+- **InteractiveWorkspace.tsx**: Added `SearchEngine` to engine map; added search algorithm logic/code to `ALGO_LOGIC_MAP`
+
+## [0.5.0] — 2026-02-13 — Code Sync & Professional Footer
+
+### Added
+- **Footer**: Professional `<footer>` with copyright ("© 2026 Devnullx Technology"), GitHub & LinkedIn links (Lucide icons), version badge, and tech stack tagline
+- **Code Panel Line Sync**: Engine → Parent callback (`onStepChange`) passes `codeLine` from each algorithm step to `CodePanel`, which highlights the active line in real-time as the visualizer runs
+
+### Changed
+- **ArrayEngine**: Added `onStepChange?: (codeLine: number | null) => void` prop; fires on every generator step
+- **TreeSortEngine**: Added matching `onStepChange` prop with identical behavior
+- **InteractiveWorkspace.tsx**: Tracks `activeLine` state via `handleStepChange` callback; passes synced `activeLine` to `CodePanel`; added `min-h-screen flex flex-col` for footer pinning
+
 ## [0.4.0] — 2026-02-13 — Split-View Layout (Code Panel Sidebar)
 
 ### Changed
@@ -86,33 +132,23 @@
   - **CodePanel**: `p-8` on all content containers.
   - **Workspace**: `p-8` wrapper on main engine area.
   - **Header**: `p-8` wrapper on main title section.
-- **Phase 6: Sorting Module & Architecture Refactoring**
-  - **New Algorithms**: Implemented Selection, Insertion, Quick, and Merge Sort with distinct visual identities (Pink, Orange, Purple, Blue).
-  - **Refactoring**: Created `@/core/algorithms/sorting/index.ts` for unified exports and renamed generators to standard names.
-  - **Engine Update**: Decoupled `ArrayEngine` from specific algorithms, allowing dynamic prop-based loading.
-  - **Bug Fix**: Resolved "Engine Not Found" error for Quick Sort by implementing `ALGO_LOGIC_MAP` in `InteractiveWorkspace`.
-  - **Registry**: Activated 5 sorting algorithms (Bubble, Selection, Insertion, Merge, Quick).
 
-- **Phase 7: Visual Polymorphism & TreeSortEngine**
-  - **Visual Polymorphism**: Implemented `visualMode` property in `lib/registry.ts` and `ArrayEngine.tsx` to support distinct rendering styles:
-    - `bars-lift`: Bars lift up during insertion (Insertion Sort).
-    - `blocks-split`: Floating square blocks for Divide & Conquer algorithms.
-    - `bars-scanner`: Persistent markers for scanning algorithms (Selection Sort).
-  - **TreeSortEngine**: Created `components/visualizers/TreeSortEngine.tsx` for hierarchical recursion visualization.
-  - **Algorithm Updates**: Refactored `mergeSort` and `quickSort` to yield `TreeStep` events (split, merge, pivot, partition).
-  - **Integration**: Updated `InteractiveWorkspace.tsx` to dynamically load `TreeSortEngine` for Merge and Quick Sort.
+## [0.2.0] — 2026-02-12 — Sorting Algorithms & Modular Architecture
 
-- **Phase 7.5: Visualizer Controls & Polish**
-  - **Dynamic Controls**: Implemented context-aware control logic for different engines:
-    - **TreeSortEngine**: Added specific Size Slider with max limit of **16** to prevent recursion tree overflow.
-    - **ArrayEngine**: Updated Size Slider with max limit of **60** for optimal bar visibility.
-  - **UI/UX**: Fixed styling issues in `TreeSortEngine` (`padding` typo) and standardized control layout.
+### Added
+- **New Algorithms**: Implemented Selection, Insertion, Quick, and Merge Sort with distinct visual identities (Pink, Orange, Purple, Blue)
+- **TreeSortEngine**: Created `components/visualizers/TreeSortEngine.tsx` for hierarchical recursion visualization (Merge Sort, Quick Sort)
+- **Visual Polymorphism**: Implemented `visualMode` property supporting `bars-lift`, `blocks-split`, `bars-scanner` rendering styles
 
-- **Phase 8: Layout Refactor**
-  - **Status Bar**: Moved step description from absolute canvas overlay to a dedicated horizontal bar between the visualizer and the code panel.
-  - **Layout**: Restructured `ArrayEngine` and `TreeSortEngine` flexbox hierarchy to support the new full-width status strip.
+### Changed
+- **Refactoring**: Created `@/core/algorithms/sorting/index.ts` for unified exports; decoupled `ArrayEngine` from specific algorithms
+- **Engine Loading**: Implemented `ALGO_LOGIC_MAP` in `InteractiveWorkspace` for dynamic prop-based algorithm loading
+- **Registry**: Activated 5 sorting algorithms (Bubble, Selection, Insertion, Merge, Quick)
+- **Controls**: Context-aware Size Slider limits — TreeSortEngine (max 16), ArrayEngine (max 60)
+- **Status Bar**: Moved step description from absolute canvas overlay to a dedicated horizontal bar
 
-- **Phase 9: Modular Architecture**
-  - **File Structure**: Refactored Merge Sort to a dedicated directory structure (`core/algorithms/sorting/merge-sort/`) containing `logic.ts`, `theory.ts`, and `index.ts`.
-  - **Serialization Fix**: Resolved "Functions cannot be passed to Client Components" error by sanitizing the `algo` object in `page.tsx`.
-  - **Complete Migration**: Extended modular pattern to Bubble, Quick, Insertion, and Selection Sort. Each algorithm now resides in its own isolated directory with logic, theory, and configuration.
+### Architecture
+- **Modular File Structure**: Refactored all 5 sorting algorithms to dedicated directories (`core/algorithms/sorting/[name]/`) containing `logic.ts`, `theory.ts`, and `index.ts`
+- **Registry Refactor**: `lib/registry.ts` now imports manifests from modular directories instead of hardcoding data
+- **Serialization Fix**: Resolved "Functions cannot be passed to Client Components" error by sanitizing the `algo` object in `page.tsx`
+

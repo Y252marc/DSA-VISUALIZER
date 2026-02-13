@@ -34,13 +34,14 @@ interface ArrayEngineProps {
     algo: AlgoItem;
     algorithm: (input: number[]) => Generator<SortStep>;
     code: string;
+    onStepChange?: (codeLine: number | null) => void;
 }
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export default function ArrayEngine({ algo, algorithm, code }: ArrayEngineProps) {
+export default function ArrayEngine({ algo, algorithm, code, onStepChange }: ArrayEngineProps) {
     const [arraySize, setArraySize] = useState(24);
     const [baseArray, setBaseArray] = useState<number[]>(INITIAL_ARRAY);
 
@@ -86,6 +87,7 @@ export default function ArrayEngine({ algo, algorithm, code }: ArrayEngineProps)
             return false;
         }
         setCurrentStep(result.value);
+        onStepChange?.(result.value.codeLine ?? null);
         setStepIndex((prev) => prev + 1);
         return true;
     }, []);

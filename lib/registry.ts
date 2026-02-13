@@ -8,7 +8,7 @@ export type AlgoItem = {
     title: string;
     category: string;
     status: "active" | "blueprint";
-    visualizer?: "ArrayEngine" | "TreeSortEngine";
+    visualizer?: "ArrayEngine" | "TreeSortEngine" | "SearchEngine";
     visualMode?: "bars" | "bars-lift" | "bars-scanner" | "blocks-split";
     complexity: { time: string; space: string };
     description: string;
@@ -40,6 +40,8 @@ import { BubbleSortManifest } from "@/core/algorithms/sorting/bubble-sort";
 import { QuickSortManifest } from "@/core/algorithms/sorting/quick-sort";
 import { InsertionSortManifest } from "@/core/algorithms/sorting/insertion-sort";
 import { SelectionSortManifest } from "@/core/algorithms/sorting/selection-sort";
+import { LinearSearchManifest } from "@/core/algorithms/searching/linear-search";
+import { BinarySearchManifest } from "@/core/algorithms/searching/binary-search";
 
 export const REGISTRY: AlgoItem[] = [
     // ==========================================================================
@@ -117,24 +119,8 @@ export const REGISTRY: AlgoItem[] = [
     // ==========================================================================
     // SEARCHING (6)
     // ==========================================================================
-    {
-        id: "linear-search",
-        title: "Linear Search",
-        category: "Searching",
-        status: "blueprint",
-        complexity: { time: "O(n)", space: "O(1)" },
-        description:
-            "Sequentially checks each element in the list until a match is found or the entire list has been searched. The simplest search algorithm with no prerequisites on data ordering. Optimal for unsorted or small datasets.",
-    },
-    {
-        id: "binary-search",
-        title: "Binary Search",
-        category: "Searching",
-        status: "blueprint",
-        complexity: { time: "O(log n)", space: "O(1)" },
-        description:
-            "Efficiently finds a target value within a sorted array by repeatedly dividing the search interval in half. Compares the target to the middle element and eliminates half of the remaining elements at each step. Foundation for many algorithmic techniques.",
-    },
+    LinearSearchManifest,
+    BinarySearchManifest,
     {
         id: "jump-search",
         title: "Jump Search",

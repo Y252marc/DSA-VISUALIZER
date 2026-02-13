@@ -51,3 +51,15 @@ export interface TreeStep {
     description: string;
     codeLine?: number;
 }
+
+// Search Types
+export interface SearchStep {
+    array: number[];
+    target: number;
+    type: "scan" | "found" | "not-found" | "range" | "mid" | "init";
+    index?: number;        // Current index being checked
+    rangeStart?: number;   // Binary search low bound
+    rangeEnd?: number;     // Binary search high bound
+    description: string;
+    codeLine?: number;
+}

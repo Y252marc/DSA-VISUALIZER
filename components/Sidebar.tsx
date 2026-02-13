@@ -23,10 +23,21 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 export default function Sidebar({ className = "" }: { className?: string }) {
     const [query, setQuery] = useState("");
-    const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({
-        Sorting: true,
-    });
     const pathname = usePathname();
+
+    // Auto-open the category that contains the current page's algorithm
+    const [openCategories, setOpenCategories] = useState<Record<string, boolean>>(() => {
+        const defaults: Record<string, boolean> = { Sorting: true };
+        // Extract slug from /visualizer/[slug]
+        const slug = pathname?.split("/visualizer/")?.[1];
+        if (slug) {
+            const match = REGISTRY.find((a) => a.id === slug);
+            if (match) {
+                defaults[match.category] = true;
+            }
+        }
+        return defaults;
+    });
 
     const categories = useMemo(() => getCategories(), []);
 
@@ -119,8 +130,8 @@ export default function Sidebar({ className = "" }: { className?: string }) {
                                                 href={`/visualizer/${algo.id}`}
                                                 // STRICT: pl-4 py-2 on the item itself
                                                 className={`flex items-center gap-3 pl-4 pr-3 py-2 text-xs transition-colors rounded-r-sm ${isActive
-                                                        ? "text-blue-400 bg-blue-500/10 font-semibold border-l-2 border-blue-500 -ml-px"
-                                                        : "text-slate-500 hover:text-slate-300 hover:bg-slate-900 border-l-2 border-transparent -ml-px"
+                                                    ? "text-blue-400 bg-blue-500/10 font-semibold border-l-2 border-blue-500 -ml-px"
+                                                    : "text-slate-500 hover:text-slate-300 hover:bg-slate-900 border-l-2 border-transparent -ml-px"
                                                     }`}
                                             >
                                                 {algo.status === "active" ? (

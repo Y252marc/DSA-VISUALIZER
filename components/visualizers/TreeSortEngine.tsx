@@ -33,6 +33,7 @@ interface TreeSortEngineProps {
     algo: AlgoItem;
     algorithm: (input: number[]) => Generator<TreeStep>;
     code: string;
+    onStepChange?: (codeLine: number | null) => void;
 }
 
 interface TreeNode {
@@ -48,7 +49,7 @@ interface TreeNode {
 // Component
 // ---------------------------------------------------------------------------
 
-export default function TreeSortEngine({ algo, algorithm, code }: TreeSortEngineProps) {
+export default function TreeSortEngine({ algo, algorithm, code, onStepChange }: TreeSortEngineProps) {
     const [arraySize, setArraySize] = useState(12); // Default within range 4-16
     const [baseArray, setBaseArray] = useState<number[]>(INITIAL_ARRAY);
 
@@ -102,6 +103,7 @@ export default function TreeSortEngine({ algo, algorithm, code }: TreeSortEngine
 
         const s = result.value;
         setCurrentStep(s);
+        onStepChange?.(s.codeLine ?? null);
         setStepIndex((prev) => prev + 1);
 
         // Update Tree State based on Step Type
