@@ -1,89 +1,76 @@
-# DSA Visualizer: Algorithm Blueprint Engine
+# DSA Visualizer
 
-A modern, industrial-grade algorithm visualization platform built with Next.js, TypeScript, and Framer Motion. Designed to break down complex data structures and algorithms into interactive, step-by-step visual experiences.
+A modern, interactive Data Structures and Algorithms visualizer built to help students and developers understand complex algorithms through animations and detailed theory.
+
+![Project Status](https://img.shields.io/badge/status-active-success.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ## 🚀 Features
 
-### Interactive Visualizers
-Experience algorithms in action with real-time state tracking and physics-based animations.
-- **Sorting Algorithms**: Bubble Sort, Selection Sort, Insertion Sort, Quick Sort, Merge Sort.
-- **Tree Visualizations**: Divide-and-Conquer algorithms (Merge/Quick) visualized as recursion trees.
-- **Search Algorithms**: Linear Search, Binary Search.
+### **Sorting Algorithms**
+* **Bubble Sort**: Classic bar visualization showing the "bubbling" effect.
+* **Selection Sort**: Highlights minimum search and swap operations.
+* **Insertion Sort**: Visualizes the "card sorting" method.
+* **Merge Sort**: **Advanced Recursion Tree** visualization showing the divide-and-conquer process.
+* **Quick Sort**: **Recursion Tree** visualization highlighting pivots and partitioning.
 
-### Core Systems
-- **Step-by-Step Execution**: Go forward, backward, or jump to specific steps in the algorithm's execution flow.
-- **Code Highlighting**: Real-time pseudocode execution with active line tracking and syntax highlighting.
-- **Algorithm Registry**: Centralized metadata system (`lib/registry.ts`) powering the entire platform's routing and navigation.
-- **Blueprint Mode**: Technical specifications for algorithms pending visualization.
+### **Searching Algorithms**
+* **Linear Search**: Sequential card scanning animation.
+* **Binary Search**: "Divide and Conquer" animation with dimming effects for discarded halves.
 
-### Industrial Design
-- **"Terminal Blue" Aesthetic**: High-contrast dark mode with neon accents (`bg-blue-600` active elements).
-- **Precision Layout**: Pixel-perfect spacing (`1.5cm` top gap, `3cm` bottom gap, `4mm` side gutters).
-- **Floating Interface**: Glassmorphic panels and crisp borders.
+### **Educational Tools**
+* **Rich Theory Sections**: Detailed explanations, time/space complexity analysis, and pros/cons for every algorithm.
+* **Code Execution Sync**: Real-time highlighting of Python code lines as the visualization runs.
+* **Interactive Controls**: Speed control, pause/play, and step-by-step execution.
+* **Custom Inputs**: Users can define their own array sizes and search targets.
 
-## 🛠 Tech Stack
+## 🛠️ Tech Stack
 
-- **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Animation**: [Framer Motion](https://www.framer.com/motion/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **State Management**: React Hooks (`useState`, `useReducer`)
+* **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
+* **Language**: [TypeScript](https://www.typescriptlang.org/)
+* **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+* **Animations**: [Framer Motion](https://www.framer.com/motion/)
+* **Icons**: [Lucide React](https://lucide.dev/)
 
-## 🏁 Getting Started
+## 📦 Getting Started
 
-### Prerequisites
-- Node.js 18+ installed on your machine.
-
-### Installation
-
-1.  Clone the repository:
+1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/yourusername/dsa-visualizer.git
+    git clone [https://github.com/yourusername/dsa-visualizer.git](https://github.com/yourusername/dsa-visualizer.git)
     cd dsa-visualizer
     ```
 
-2.  Install dependencies:
+2.  **Install dependencies:**
     ```bash
     npm install
     # or
     yarn install
     ```
 
-3.  Run the development server:
+3.  **Run the development server:**
     ```bash
     npm run dev
+    # or
+    yarn dev
     ```
 
-4.  Open [http://localhost:3000](http://localhost:3000) in your browser.
+4.  **Open your browser:**
+    Navigate to [http://localhost:3000](http://localhost:3000) to see the application.
 
 ## 📂 Project Structure
 
-```
-├── app/                  # Next.js App Router pages
-│   ├── visualizer/[slug] # Dynamic visualizer route
-│   └── page.tsx          # Main Dashboard
-├── components/           # UI Components
-│   ├── visualizers/      # Algorithm-specific components (Engine, Bars)
-│   ├── Sidebar.tsx       # Navigation sidebar
-│   └── CodePanel.tsx     # Syntax-highlighted code display
-├── core/                 # Core Algorithm Logic
-│   └── algorithms/       # Modular algorithm implementations (Generator functions)
-├── lib/                  # Utilities & Data
-│   └── registry.ts       # Central source of truth for all algorithms
-└── public/               # Static assets
-```
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1.  Fork the project
-2.  Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4.  Push to the branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
+```text
+/app
+  └── visualizer/       # Dynamic algorithm pages
+/components
+  ├── Sidebar.tsx       # Navigation
+  ├── CodePanel.tsx     # Algorithm code display
+  ├── TheorySection.tsx # Educational content
+  └── engines/          # Visualization Logic
+      ├── ArrayEngine.tsx    # For Bubble/Selection/Insertion
+      ├── TreeSortEngine.tsx # For Merge/Quick Sort
+      └── SearchEngine.tsx   # For Linear/Binary Search
+/core
+  └── algorithms/       # Logic, Generators, and Theory data
+/lib
+  └── registry.ts       # Central algorithm manifest
