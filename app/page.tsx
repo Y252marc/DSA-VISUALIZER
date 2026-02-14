@@ -10,7 +10,7 @@ export default function HomePage() {
     return (
         <MainLayout>
             <div className="bg-slate-950 min-h-screen pb-32 px-4 selection:bg-blue-500/30 text-slate-400">
-                {/* ── HEADER SPACER (Force Gap) ────────────────────── */}
+                {/* ── HEADER SPACER ────────────────────── */}
                 <div className="h-14 w-full" aria-hidden="true" />
 
                 <div className="p-8 max-w-5xl mx-auto">
